@@ -6,9 +6,6 @@ az group create -n Demo2 -l 'australiasoutheast'
 az deployment group create -g 'Demo2' --template-file main.bicep
 
 # Deployment with parameter file
-az deployment group create \
-    --resource-group 'Demo2' \
-    --template-file main.bicep 
-    --parameter main.parameters.json
+az deployment group create --resource-group 'Demo2' --template-file main.bicep --parameter main.parameters.dev.json
 
 clear
