@@ -1,0 +1,8 @@
+az version
+az login  
+
+# Create resource group
+az group create -n Demo1 -l 'australiasoutheast'
+az deployment group create -g 'Demo1' -f 'sample-01.bicep'
+
+clear
