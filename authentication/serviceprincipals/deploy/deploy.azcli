@@ -1,0 +1,15 @@
+$myServicePrincipalName='MyPipeline'
+az ad sp list --all --query "[].{displayName:displayName,id:id} | [?displayName == '$myServicePrincipalName']"
+
+# ID received from the list command
+$servicePrincipalId="d7fffa56-fc08-4d5f-bd43-d233aee3dc18" 
+$servicePrincipalAppId=az ad sp show --id $servicePrincipalId --query "appId" --output tsv
+
+az login --service-principal --username APPLICATION_ID --password SERVICE_PRINCIPAL_KEY --tenant TENANT_ID
+# APPLICATION_ID | SERVICE_PRINCIPAL_KEY | TENANT_ID retrieving from the output when the SP is created.
+# Password can only be retrieved when created the service principal
+az login --service-principal --username 771ab4b4-3c9c-4a86-9bdb-bed06a22cca6 --password q048Q~VQmTYco66lhtDmWgLAWvAfxvbWmkNZNao1 --tenant 991bddff-d5ab-473d-a1d0-87aade2721db
+
+# Deploy the Bicep file
+$resourceGroupName='devRG'
+az deployment group create --resource-group $resourceGroupName --template-file main.bicep

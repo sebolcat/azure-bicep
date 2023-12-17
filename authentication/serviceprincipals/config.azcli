@@ -1,0 +1,34 @@
+# === CREATE SERVICE PRINCIPAL ===
+az ad sp list --output table
+
+$myServicePrincipalName='MyPipeline'
+$servicePrincipal=az ad sp create-for-rbac --display-name "$myServicePrincipalName"
+
+# Test the service principal
+az login --service-principal --username APPLICATION_ID --password SERVICE_PRINCIPAL_KEY --tenant TENANT_ID --allow-no-subscriptions
+
+# APPLICATION_ID | SERVICE_PRINCIPAL_KEY | TENANT_ID retrieving from the output when the SP is created.
+# Password can only be retrieved when created the service principal
+az login --service-principal --username 771ab4b4-3c9c-4a86-9bdb-bed06a22cca6 --password q048Q~VQmTYco66lhtDmWgLAWvAfxvbWmkNZNao1 --tenant 991bddff-d5ab-473d-a1d0-87aade2721db --allow-no-subscriptions
+az logout
+
+# Retrieve the AppId from the output - SP name is not unique so we have to list out all possible or copy from Azure AD tenant
+az ad sp list --all --query "[].{displayName:displayName,id:id} | [?displayName == '$myServicePrincipalName']"
+$servicePrincipalId="d7fffa56-fc08-4d5f-bd43-d233aee3dc18"
+
+# DEBUG: check the created service principal
+az ad sp list --all --query "[].{DisplayName:displayName,Id:id}"
+$servicePrincipalAppId=az ad sp show --id $servicePrincipalId --query "appId" --output tsv
+
+# Reset a key for service principal
+$servicePrincipal=az ad sp show --id "$servicePrincipalId"
+az ad sp credential list --id "$servicePrincipalId" --query "[].{displayName:displayName,keyId:keyId}"
+az ad sp credential reset --id $servicePrincipalObjectId
+
+# === CREATE A ROLE ASSIGNMENT ===
+az role assignment create --assignee APPLICATION_ID --role Contributor --scope RESOURCE_GROUP_ID --description "The deployment pipeline for the company's website needs to be able to create resources within the resource group."
+
+$resourceGroupName='devRG'
+az login
+$resourceGroupId=az group show --name $resourceGroupName --query "id" --output tsv
+az role assignment create --assignee $servicePrincipalAppId --role Contributor --scope $resourceGroupId --description "The deployment pipeline for the company's website needs to be able to create resources within the resource group."
